@@ -1,6 +1,6 @@
 import sys
+import logging
 
-# from datatrove.executor.slurm import SlurmPipelineExecutor
 from datatrove.executor.local import LocalPipelineExecutor
 from datatrove.pipeline.extractors import Trafilatura
 from datatrove.pipeline.filters import (
@@ -15,11 +15,6 @@ from datatrove.pipeline.writers.jsonl import JsonlWriter
 from datatrove.pipeline.writers.parquet import ParquetWriter
 
 from custom_filter import RegexKeep
-
-#DUMP = "CC-MAIN-2024-26"
-#MAIN_OUTPUT_PATH = "/mnt/ccd/CC-MAIN-2024-26/parsed/0_prefilter"
-
-import logging
 
 # Set the logging level to ERROR, so WARNING messages will be suppressed
 logging.basicConfig(level=logging.ERROR)
@@ -56,16 +51,19 @@ custom_url_filter = CustomURLFilter(
 
 if __name__ == '__main__':
     DUMP = sys.argv[1]
+    #DUMP = "CC-MAIN-2024-26"
     WARC_PATH = sys.argv[2]
+    #WARC_PATH = "data/WARC"
     MAIN_OUTPUT_PATH = sys.argv[3]
+    #MAIN_OUTPUT_PATH = "data/parsed"
     
-    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH,"0_prefilter")
-    WARC_PATTERN = os.path.join(WARC_PATH, "./*.warc.gz")
+    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, "0_prefilter")
+    WARC_PATTERN = "./*.warc.gz"
     
     executor = LocalPipelineExecutor(
         pipeline=[
             WarcReader(
-                f"/mnt/ccd/CC-MAIN-2024-26/WARC",
+                WARC_PATH,
                 glob_pattern=WARC_PATTERN,
                 default_metadata={"dump": DUMP},
             ),
