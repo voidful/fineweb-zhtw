@@ -64,7 +64,6 @@ if __name__ == '__main__':
     
     MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "0b_traf")
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "1_filter_lang")
-
     FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
 
     # Read the character mappings from both files
@@ -122,7 +121,7 @@ if __name__ == '__main__':
             ),
             simplified_chinese_filter,
             traditional_chinese_filter,
-            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/out"),
+            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output"),
         ],
         tasks=32,
         workers=32,

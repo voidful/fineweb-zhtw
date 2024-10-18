@@ -1,23 +1,16 @@
-from datatrove.pipeline.filters import RegexFilter
+import os
 import re
+
+from datatrove.pipeline.filters import RegexFilter
 from datatrove.pipeline.writers.jsonl import JsonlWriter
 from datatrove.pipeline.readers import ParquetReader, JsonlReader
 from datatrove.executor.local import LocalPipelineExecutor
-import os
 from datatrove.pipeline.writers.parquet import ParquetWriter
-
-DUMP = "CC-MAIN-2024-33"
-MAIN_INPUT_PATH = "/mnt/ccd/{DUMP}/parsed/3_c4"
-MAIN_OUTPUT_PATH = "/mnt/ccd/{DUMP}/parsed/4_fineweb"
-FILTERING_OUTPUT_PATH = f"{MAIN_OUTPUT_PATH}"
-
-
 from datatrove.pipeline.filters.base_filter import BaseFilter
 from datatrove.pipeline.filters.gopher_repetition_filter import find_duplicates
 from datatrove.pipeline.writers.disk_base import DiskWriter
 from datatrove.utils.typeshelper import Languages
 from datatrove.utils.word_tokenizers import load_word_tokenizer
-
 
 class FineWebQualityFilter(BaseFilter):
     name = "🍷 FineWeb Quality"
@@ -68,26 +61,34 @@ class FineWebQualityFilter(BaseFilter):
 
         return True
 
-
-# Initial filtering pipeline - Part 5
-initial_executor_part5 = LocalPipelineExecutor(
-    pipeline=[
-        JsonlReader(f"{MAIN_INPUT_PATH}/out/", glob_pattern='*.gz'),
-        FineWebQualityFilter(
-            exclusion_writer=JsonlWriter(f"{MAIN_OUTPUT_PATH}/removed/FineWebQuality/{DUMP}"),
-            line_punct_thr=0.04,
-            line_punct_exclude_zero=False,
-            short_line_thr=0.8,
-            short_line_length=10,
-            char_duplicates_ratio=0.3,
-            new_line_ratio=0.3,
-            language=Languages.chinese
-        ),
-        JsonlWriter(f"{MAIN_OUTPUT_PATH}/out")
-    ],
-    tasks=32,
-    workers=32,
-    logging_dir=f"{MAIN_OUTPUT_PATH}/logs/base_processing/{DUMP}/part4",
-)
 if __name__ == '__main__':
+    DUMP = sys.argv[1]
+    MAIN_OUTPUT_PATH = sys.argv[2]
+
+    MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "3_c4")
+    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "4_fineweb")
+    FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
+    os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
+
+    # Initial filtering pipeline - Part 5
+    initial_executor_part5 = LocalPipelineExecutor(
+        pipeline=[
+            JsonlReader(f"{MAIN_INPUT_PATH_LAST_STAGE}/out/", glob_pattern='*.gz'),
+            FineWebQualityFilter(
+                exclusion_writer=JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/removed/FineWebQuality/{DUMP}"),
+                line_punct_thr=0.04,
+                line_punct_exclude_zero=False,
+                short_line_thr=0.8,
+                short_line_length=10,
+                char_duplicates_ratio=0.3,
+                new_line_ratio=0.3,
+                language=Languages.chinese
+            ),
+            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/out")
+        ],
+        tasks=32,
+        workers=32,
+        logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}/part4",
+    )
+
 	initial_executor_part5.run()

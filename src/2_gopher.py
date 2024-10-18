@@ -1,17 +1,11 @@
-from datatrove.pipeline.filters import RegexFilter
 import re
+import os
+
+from datatrove.pipeline.filters import RegexFilter
 from datatrove.pipeline.writers.jsonl import JsonlWriter
 from datatrove.pipeline.readers import ParquetReader, JsonlReader
 from datatrove.executor.local import LocalPipelineExecutor
-import os
 from datatrove.pipeline.writers.parquet import ParquetWriter
-
-DUMP = "CC-MAIN-2024-33"
-MAIN_INPUT_PATH = f"/mnt/ccd/{DUMP}/parsed/1_filter_sc2"
-MAIN_OUTPUT_PATH = f"/mnt/ccd/{DUMP}/parsed/2_gopher"
-FILTERING_OUTPUT_PATH = f"{MAIN_OUTPUT_PATH}"
-
-
 from datatrove.pipeline.filters import (
     GopherQualityFilter,
     GopherRepetitionFilter,
@@ -33,58 +27,37 @@ chinese_stop_words = [
  "吧", "呢", "啊", "哪", "那", "麼", "什麼", "誰", "哪裡", "哪裡", "怎麼", "怎麼樣", "為什麼", "將"
 ]
 
-
-# Initial filtering pipeline - Part 2
-initial_executor_part2 = LocalPipelineExecutor(
-    pipeline=[
-        JsonlReader(f"{MAIN_INPUT_PATH}/out/", glob_pattern='*.gz'),
-        # GopherQualityFilter(
-            
-        #     exclusion_writer=JsonlWriter(f"{FILTERING_OUTPUT_PATH}/removed/2_gopher_min_max_len/{DUMP}"),
-        #     language="zh",
-        # ),
-        # GopherQualityFilter(
-        #     min_avg_word_length=1,  # doesn't filter out anything any way
-        #     max_avg_word_length=4, # removed because we have some bilingual content
-        # )
-        GopherQualityFilter(
-            min_doc_words=50,
-            max_doc_words=100000,
-            max_symbol_word_ratio=0.1,
-            exclusion_writer=JsonlWriter(f"{FILTERING_OUTPUT_PATH}/removed/2_gopher/{DUMP}"),
-            language="zh",
-            max_ellipsis_lines_ratio=0.3,
-            ellipsis_line_word_threshold=100, # if BELOW this threshold and end with ellipsis, count as a bad line, else count as a good line.
-            max_non_alpha_words_ratio=0, 
-            min_stop_words=1,
-            stop_words=chinese_stop_words,
-        ),
-        #47423753
-        #450562782
-        # GopherQualityFilter(
-        #     max_bullet_lines_ratio=0.9,
-        #     exclusion_writer=JsonlWriter(f"{FILTERING_OUTPUT_PATH}/removed/2_gopher_bullet_ratio/{DUMP}"),
-        #     language="zh",
-        # ),
-        # GopherQualityFilter(
-            
-        # ),
-        # GopherQualityFilter(
-        #      # Remove this for Chinese
-        #     language="zh",
-        # ),
-        # GopherQualityFilter(
-            
-        #     exclusion_writer=JsonlWriter(f"{FILTERING_OUTPUT_PATH}/removed/2_gopher_stop_words/{DUMP}"),
-        #     language="zh",
-        # ),
-        
-        JsonlWriter(f"{MAIN_OUTPUT_PATH}/out")
-    ],
-    tasks=32,
-    workers=32,
-    logging_dir=f"{MAIN_OUTPUT_PATH}/logs/base_processing/{DUMP}/",
-)
 if __name__ == '__main__':
+    DUMP = sys.argv[1]
+    MAIN_OUTPUT_PATH = sys.argv[2]
+
+    MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "1_filter_lang")
+    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "2_gopher")
+    FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
+    os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
+    
+    # Initial filtering pipeline - Part 2
+    initial_executor_part2 = LocalPipelineExecutor(
+        pipeline=[
+            JsonlReader(f"{MAIN_INPUT_PATH_LAST_STAGE}/output/", glob_pattern='*.gz'),
+            GopherQualityFilter(
+                min_doc_words=50,
+                max_doc_words=100000,
+                max_symbol_word_ratio=0.1,
+                exclusion_writer=JsonlWriter(f"{FILTERING_OUTPUT_PATH}/removed/2_gopher/{DUMP}"),
+                language="zh",
+                max_ellipsis_lines_ratio=0.3,
+                ellipsis_line_word_threshold=100, # if BELOW this threshold and end with ellipsis, count as a bad line, else count as a good line.
+                max_non_alpha_words_ratio=0, 
+                min_stop_words=1,
+                stop_words=chinese_stop_words,
+            ),           
+            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
+        ],
+        tasks=32,
+        workers=32,
+        logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}/",
+    )
+
     initial_executor_part2.run()
 

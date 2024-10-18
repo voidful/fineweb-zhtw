@@ -73,21 +73,29 @@ custom_url_filter = CustomURLFilter(
     ),
     url_filterout = set(["&CHANNEL=", ".cn/", "&AID=","=AVSHOW"])
 )
-
-initial_executor_part1 = LocalPipelineExecutor(
-    pipeline=[
-    	JsonlReader(f"{MAIN_INPUT_PATH}/out/", glob_pattern='*.gz'),
-        simplified_filter,
-        plus18_filter,
-        custom_url_filter,
-        JsonlWriter(f"{MAIN_OUTPUT_PATH}/out"),
-        
-    ],
-    tasks=32,
-    workers=32,
-    logging_dir=f"{MAIN_OUTPUT_PATH}/logs/base_processing//{DUMP}/part1",
-)
 if __name__ == '__main__':
+    DUMP = sys.argv[1]
+    MAIN_OUTPUT_PATH = sys.argv[2]
+
+    MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "3_c4")
+    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "4_fineweb")
+    FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
+    os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
+
+    initial_executor_part1 = LocalPipelineExecutor(
+        pipeline=[
+            JsonlReader(f"{MAIN_INPUT_PATH}/out/", glob_pattern='*.gz'),
+            simplified_filter,
+            plus18_filter,
+            custom_url_filter,
+            JsonlWriter(f"{MAIN_OUTPUT_PATH}/out"),
+            
+        ],
+        tasks=32,
+        workers=32,
+        logging_dir=f"{MAIN_OUTPUT_PATH}/logs/base_processing//{DUMP}/part1",
+    )
+
 	initial_executor_part1.run()
     
     
