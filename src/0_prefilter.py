@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 
 from datatrove.executor.local import LocalPipelineExecutor
@@ -10,9 +11,11 @@ from datatrove.pipeline.filters import (
     URLFilter,
     RegexFilter,
 )
+from datatrove.pipeline.filters.base_filter import BaseFilter
 from datatrove.pipeline.readers import WarcReader
 from datatrove.pipeline.writers.jsonl import JsonlWriter
 from datatrove.pipeline.writers.parquet import ParquetWriter
+from datatrove.pipeline.writers.disk_base import DiskWriter
 
 from custom_filter import RegexKeep
 
@@ -39,13 +42,7 @@ class CustomURLFilter(BaseFilter):
 
         return True
     
-custom_url_filter = CustomURLFilter(
-    exclusion_writer=JsonlWriter(
-        f"{FILTERING_OUTPUT_PATH}/removed/url/{DUMP}",
-        output_filename="${rank}.jsonl.gz"
-    ),
-    url_filterout = set(["&CHANNEL=", ".cn/", "&AID=","=AVSHOW"])
-)
+
 
 
 
@@ -58,8 +55,18 @@ if __name__ == '__main__':
     #MAIN_OUTPUT_PATH = "data/parsed"
     
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, "0_prefilter")
+    FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
     WARC_PATTERN = "./*.warc.gz"
+    os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
     
+    custom_url_filter = CustomURLFilter(
+        exclusion_writer=JsonlWriter(
+            f"{FILTERING_OUTPUT_PATH}/removed/url/{DUMP}",
+            output_filename="${rank}.jsonl.gz"
+        ),
+        url_filterout = set(["&CHANNEL=", ".cn/", "&AID=","=AVSHOW"])
+    )
+
     executor = LocalPipelineExecutor(
         pipeline=[
             WarcReader(
@@ -72,8 +79,9 @@ if __name__ == '__main__':
             custom_url_filter,
             ParquetWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
         ],
-        tasks=64,
-        workers=64,
+        tasks=1,
+        workers=1,
+        start_method='spawn',
         logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}",
         
     )

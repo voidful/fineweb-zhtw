@@ -73,6 +73,7 @@ custom_url_filter = CustomURLFilter(
     ),
     url_filterout = set(["&CHANNEL=", ".cn/", "&AID=","=AVSHOW"])
 )
+
 if __name__ == '__main__':
     DUMP = sys.argv[1]
     MAIN_OUTPUT_PATH = sys.argv[2]

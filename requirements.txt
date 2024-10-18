@@ -1,0 +1,10 @@
+-e datatrove-zhtw
+git+https://github.com/APCLab/jieba-tw.git
+orjson
+faust-cchardet
+python-magic
+warcio
+pyahocorasick
+fasteners
+tldextract
+pyarrow
