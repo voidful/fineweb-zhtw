@@ -1,3 +1,6 @@
 [submodule "datatrove-zhtw"]
 	path = datatrove-zhtw
 	url = https://github.com/Splend1d/datatrove-zhtw
+[submodule "fastText"]
+	path = fastText
+	url = https://github.com/facebookresearch/fastText.git
