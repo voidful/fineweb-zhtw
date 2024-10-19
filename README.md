@@ -3,7 +3,7 @@
 ## Installation
 Clone repo with submodules
 ```bash
-git clone --recurse-submodules <repository-url>
+git clone --recurse-submodules https://github.com/mtkresearch/fineweb-zhtw.git
 ```
 
 Install requirements
