@@ -8,3 +8,12 @@ pyahocorasick
 fasteners
 tldextract
 pyarrow
+pandas
+datasets
+trafilatura
+tokenizers
+Cython
+pybind11
+setuptools
+fasttext==0.9.3
+spacy

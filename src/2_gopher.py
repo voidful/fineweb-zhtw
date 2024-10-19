@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 
 from datatrove.pipeline.filters import RegexFilter
 from datatrove.pipeline.writers.jsonl import JsonlWriter
@@ -30,6 +31,7 @@ chinese_stop_words = [
 if __name__ == '__main__':
     DUMP = sys.argv[1]
     MAIN_OUTPUT_PATH = sys.argv[2]
+    N_CPU = int(sys.argv[3])
 
     MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "1_filter_lang")
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "2_gopher")
@@ -54,8 +56,8 @@ if __name__ == '__main__':
             ),           
             JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
         ],
-        tasks=32,
-        workers=32,
+        tasks=N_CPU,
+        workers=N_CPU,
         logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}/",
     )
 

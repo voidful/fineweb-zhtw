@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from datatrove.pipeline.filters import RegexFilter
 from datatrove.pipeline.writers.jsonl import JsonlWriter
@@ -64,6 +65,7 @@ class FineWebQualityFilter(BaseFilter):
 if __name__ == '__main__':
     DUMP = sys.argv[1]
     MAIN_OUTPUT_PATH = sys.argv[2]
+    N_CPU = int(sys.argv[3])
 
     MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "3_c4")
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "4_fineweb")
@@ -73,7 +75,7 @@ if __name__ == '__main__':
     # Initial filtering pipeline - Part 5
     initial_executor_part5 = LocalPipelineExecutor(
         pipeline=[
-            JsonlReader(f"{MAIN_INPUT_PATH_LAST_STAGE}/out/", glob_pattern='*.gz'),
+            JsonlReader(f"{MAIN_INPUT_PATH_LAST_STAGE}/output/", glob_pattern='*.gz'),
             FineWebQualityFilter(
                 exclusion_writer=JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/removed/FineWebQuality/{DUMP}"),
                 line_punct_thr=0.04,
@@ -84,11 +86,11 @@ if __name__ == '__main__':
                 new_line_ratio=0.3,
                 language=Languages.chinese
             ),
-            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/out")
+            JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
         ],
-        tasks=32,
-        workers=32,
+        tasks=N_CPU,
+        workers=N_CPU,
         logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}/part4",
     )
 
-	initial_executor_part5.run()
+    initial_executor_part5.run()

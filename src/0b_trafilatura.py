@@ -22,6 +22,7 @@ from custom_filter import RegexKeep
 if __name__ == '__main__':
     DUMP = sys.argv[1]
     MAIN_OUTPUT_PATH = sys.argv[2]
+    N_CPU = int(sys.argv[3])
 
     MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "0_prefilter")
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "0b_traf")
@@ -57,12 +58,12 @@ if __name__ == '__main__':
                 example["text"] = ""
             return example
 
-        ct_dss = ct_dss.map(clean_text, num_proc=32)
+        ct_dss = ct_dss.map(clean_text, num_proc=N_CPU)
 
         def has_text(example):
             return example["text"] is not None and len(example["text"])
 
-        ct_dss = ct_dss.filter(has_text, num_proc=32)
+        ct_dss = ct_dss.filter(has_text, num_proc=N_CPU)
 
         print("length", len(ct_dss))
         ct_dss["train"].to_parquet(output_path)

@@ -53,8 +53,9 @@ if __name__ == '__main__':
     #WARC_PATH = "data/WARC"
     MAIN_OUTPUT_PATH = sys.argv[3]
     #MAIN_OUTPUT_PATH = "data/parsed"
+    N_CPU = int(sys.argv[4])
     
-    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, "0_prefilter")
+    MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "0_prefilter")
     FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
     WARC_PATTERN = "./*.warc.gz"
     os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
@@ -79,8 +80,8 @@ if __name__ == '__main__':
             custom_url_filter,
             ParquetWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
         ],
-        tasks=1,
-        workers=1,
+        tasks=N_CPU,
+        workers=N_CPU,
         start_method='spawn',
         logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}",
         

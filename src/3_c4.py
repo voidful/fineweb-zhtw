@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from datatrove.pipeline.filters import RegexFilter
 from datatrove.pipeline.writers.jsonl import JsonlWriter
@@ -24,6 +25,7 @@ from datatrove.utils.typeshelper import Languages
 if __name__ == '__main__':
     DUMP = sys.argv[1]
     MAIN_OUTPUT_PATH = sys.argv[2]
+    N_CPU = int(sys.argv[3])
 
     MAIN_INPUT_PATH_LAST_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "2_gopher")
     MAIN_OUTPUT_PATH_WITH_STAGE = os.path.join(MAIN_OUTPUT_PATH, DUMP, "3_c4")
@@ -50,8 +52,8 @@ if __name__ == '__main__':
             ),
             JsonlWriter(f"{MAIN_OUTPUT_PATH_WITH_STAGE}/output")
         ],
-        tasks=32,
-        workers=32,
+        tasks=N_CPU,
+        workers=N_CPU,
         logging_dir=f"{MAIN_OUTPUT_PATH_WITH_STAGE}/logs/base_processing/{DUMP}/part3",
     )
     initial_executor_part3.run()
