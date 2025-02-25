@@ -32,7 +32,7 @@ if __name__ == '__main__':
     FILTERING_OUTPUT_PATH = MAIN_OUTPUT_PATH_WITH_STAGE
     os.makedirs(MAIN_OUTPUT_PATH_WITH_STAGE, exist_ok=True)
 
-    print(filterout_pattern)
+    #print(filterout_pattern)
     simplified_filter = RegexFilter(
         regex_exp=filterout_pattern,
         exclusion_writer=JsonlWriter(
