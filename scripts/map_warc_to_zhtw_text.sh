@@ -1,12 +1,10 @@
-DUMP="CC-MAIN-2024-26"
+DUMP="FINEWINE2"
 WARC_PATH="data/WARC/${DUMP}"
 MAIN_OUTPUT_PATH="data/parsed"
-N_CPU=1
+N_CPU=15
 export PYTHONUTF8=1
 
-python3 src/0_prefilter.py ${DUMP} ${WARC_PATH} ${MAIN_OUTPUT_PATH} ${N_CPU}
-python3 src/0b_trafilatura.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
-python3 src/1_filter_lang.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
+python3 src/1_finewine2.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
 python3 src/2_gopher.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
 python3 src/3_c4.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
 python3 src/4_fineweb.py ${DUMP} ${MAIN_OUTPUT_PATH} ${N_CPU}
